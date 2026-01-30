@@ -19,7 +19,7 @@ export default function WelcomeScreen() {
 
       <View style={styles.imageContainer}>
         <Image
-          source={require('../../../../assets/doctor.png')}
+          source={require('../../../assets/doctor.png')}
           style={styles.image}
           resizeMode="cover"
         />

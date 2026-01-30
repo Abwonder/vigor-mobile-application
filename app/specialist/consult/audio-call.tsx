@@ -66,7 +66,7 @@ export default function AudioCallScreen() {
 
       {/* Background Pattern */}
       <ImageBackground
-        source={require('../../../../assets/vigor-logo.jpeg')}
+        source={require('../../../assets/vigor-logo.jpeg')}
         style={styles.background}
         imageStyle={styles.backgroundImage}
       >

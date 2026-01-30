@@ -140,7 +140,7 @@ export default function ChatScreen() {
       </View>
 
       <ImageBackground
-        source={require('../../../../assets/vigor-logo.jpeg')} // Using logo as a pattern placeholder
+        source={require('../../../assets/vigor-logo.jpeg')} // Using logo as a pattern placeholder
         style={styles.chatBackground}
         imageStyle={styles.backgroundImage}
       >
