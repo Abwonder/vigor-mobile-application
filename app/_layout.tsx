@@ -16,7 +16,13 @@ export default function RootLayout() {
   // Navigate to splash on first load
   useEffect(() => {
     if (!rootNavigationState?.key) return;
-    router.replace('/splash');
+
+    // Ensure navigation is ready by pushing to next tick
+    const timer = setTimeout(() => {
+      router.replace('/splash');
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [rootNavigationState?.key]);
 
   useEffect(() => {
