@@ -30,7 +30,7 @@ import {
   StartTriageModal,
   AssigningModal,
   ConditionPreviewModal,
-} from '../components/TriageModals';
+} from '../../components/TriageModals';
 
 const CONDITION_CATEGORIES = [
   {

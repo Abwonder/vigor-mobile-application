@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
-import VideoCallScreen from '../../components/VideoCallScreen';
-import VideoQuickActions from '../../components/VideoQuickActions';
+import VideoCallScreen from '../../../components/VideoCallScreen';
+import VideoQuickActions from '../../../components/VideoQuickActions';
 import * as ImagePicker from 'expo-image-picker';
 
 interface Consultation {

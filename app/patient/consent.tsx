@@ -10,7 +10,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, CheckCircle2, Circle } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
-import SubscriptionModal from '../components/SubscriptionModal';
+import SubscriptionModal from '../../components/SubscriptionModal';
 
 export default function ConsentScreen() {
   const router = useRouter();
