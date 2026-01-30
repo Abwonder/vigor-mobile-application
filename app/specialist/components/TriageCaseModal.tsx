@@ -217,7 +217,7 @@ export default function TriageCaseModal({
                   title={submitting ? 'Submitting...' : 'Submit Advice'}
                   onPress={handleGiveAdvice}
                   disabled={!advice.trim() || submitting}
-                  variant="secondary"
+                  variant="outline"
                 />
               </View>
             </ScrollView>
