@@ -113,7 +113,10 @@ export default function TriageCaseModal({
               <ActivityIndicator size="large" color={Colors.light.primary} />
             </View>
           ) : (
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.content}
+              showsVerticalScrollIndicator={false}
+            >
               {/* Severity Badge */}
               <View
                 style={[
@@ -128,7 +131,9 @@ export default function TriageCaseModal({
                   style={[
                     styles.severityDot,
                     {
-                      backgroundColor: getSeverityColor(caseData?.severity_level),
+                      backgroundColor: getSeverityColor(
+                        caseData?.severity_level,
+                      ),
                     },
                   ]}
                 />
@@ -194,7 +199,7 @@ export default function TriageCaseModal({
                 <Text style={styles.actionTitle}>Choose Action</Text>
 
                 <Button
-                  title=\"Find Specialist\"
+                  title="Find Specialist"
                   onPress={onAssignSpecialist}
                   variant="primary"
                 />
