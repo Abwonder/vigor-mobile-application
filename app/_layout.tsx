@@ -5,15 +5,19 @@ import { useFrameworkReady } from '../hooks/useFrameworkReady';
 import { supabase } from '../lib/supabase';
 import * as Linking from 'expo-linking';
 
+import { useRootNavigationState } from 'expo-router';
+
 export default function RootLayout() {
   useFrameworkReady();
   const router = useRouter();
   const segments = useSegments();
+  const rootNavigationState = useRootNavigationState();
 
   // Navigate to splash on first load
   useEffect(() => {
+    if (!rootNavigationState?.key) return;
     router.replace('/splash');
-  }, []);
+  }, [rootNavigationState?.key]);
 
   useEffect(() => {
     const handleUrl = async (event: { url: string }) => {
