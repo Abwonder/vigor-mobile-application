@@ -18,7 +18,7 @@ import { supabase } from '../../../lib/supabase';
 import SpecialistAssignmentCard from '../../../components/SpecialistAssignmentCard';
 import DoctorRequestVitalsCard from '../../../components/DoctorRequestVitalsCard';
 import QuickActionsModal from '../../../components/QuickActionsModal';
-import { initiateVideoCall } from '../../lib/videoConsultation';
+import { initiateVideoCall } from '../../../lib/videoConsultation';
 
 interface Message {
   id: string;
