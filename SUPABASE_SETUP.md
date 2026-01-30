@@ -16,14 +16,15 @@ This document provides step-by-step instructions for configuring your Supabase p
 
 1. Toggle **Enable Phone provider** to ON
 2. In the **Twilio Settings** section, enter your credentials:
-   - **Twilio Account SID**: `ACb446375df3d9ada2cda0cc16d70cab7f`
-   - **Twilio Auth Token**: `936b9625ec9acf1706be73b036944ad0`
-   - **Twilio Verify Service SID**: `VA3395f1f361ecd7c1b55596c1f091924d`
+   - **Twilio Account SID**: `YOUR_TWILIO_ACCOUNT_SID`
+   - **Twilio Auth Token**: `YOUR_TWILIO_AUTH_TOKEN`
+   - **Twilio Verify Service SID**: `YOUR_TWILIO_VERIFY_SERVICE_SID`
 3. Click **Save**
 
 ### Step 3: Configure OTP Settings (Optional)
 
 You can customize OTP settings:
+
 - **OTP expiry duration**: Default is 60 seconds (adjust if needed)
 - **OTP length**: Default is 6 digits
 
@@ -75,6 +76,7 @@ All database migrations should already be applied. To verify:
 ### Step 2: Verify Bucket Policies
 
 The bucket should have these policies:
+
 - Users can upload to their own folder
 - Users can view files in their conversations
 - Users can delete their own files
@@ -187,9 +189,9 @@ Your `.env` file should contain:
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
 
-TWILIO_ACCOUNT_SID=ACb446375df3d9ada2cda0cc16d70cab7f
-TWILIO_AUTH_TOKEN=936b9625ec9acf1706be73b036944ad0
-TWILIO_VERIFY_SERVICE_SID=VA3395f1f361ecd7c1b55596c1f091924d
+TWILIO_ACCOUNT_SID=YOUR_TWILIO_ACCOUNT_SID
+TWILIO_AUTH_TOKEN=YOUR_TWILIO_AUTH_TOKEN
+TWILIO_VERIFY_SERVICE_SID=YOUR_TWILIO_VERIFY_SERVICE_SID
 ```
 
 Note: Twilio credentials are only used by Supabase backend, not exposed to the client.
