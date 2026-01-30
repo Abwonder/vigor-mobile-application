@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../../../lib/supabase';
 import { ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react-native';
 
 interface FAQ {
