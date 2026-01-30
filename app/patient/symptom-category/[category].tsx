@@ -11,7 +11,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { Search, ChevronLeft, ShoppingCart } from 'lucide-react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 interface Symptom {
   id: string;

@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { ChevronLeft, Bell, FileText, Eye, MessageSquare, MessageCircle, FileStack, Activity, Sparkles } from 'lucide-react-native';
 
 interface UserSettings {

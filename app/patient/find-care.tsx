@@ -25,7 +25,7 @@ import {
   ShoppingCart,
   Plus,
 } from 'lucide-react-native';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import {
   StartTriageModal,
   AssigningModal,

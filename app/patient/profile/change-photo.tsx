@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { ChevronLeft, Image as ImageIcon, Camera } from 'lucide-react-native';
 

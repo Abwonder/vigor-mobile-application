@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useState, useEffect } from 'react';
 import { router } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import {
   ChevronLeft,
   Plus,

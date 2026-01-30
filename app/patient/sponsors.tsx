@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { ChevronLeft, MoreVertical, X, User } from 'lucide-react-native';
 
 interface Sponsor {

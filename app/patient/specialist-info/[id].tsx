@@ -23,7 +23,7 @@ import {
   Star,
   Calendar,
 } from 'lucide-react-native';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 interface Specialist {
   id: string;

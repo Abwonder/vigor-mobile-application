@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft, Phone, Video, Plus } from 'lucide-react-native';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import SpecialistAssignmentCard from '../../components/SpecialistAssignmentCard';
 import DoctorRequestVitalsCard from '../../components/DoctorRequestVitalsCard';
 import QuickActionsModal from '../../components/QuickActionsModal';
