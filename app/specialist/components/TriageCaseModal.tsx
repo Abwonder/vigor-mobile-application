@@ -97,20 +97,20 @@ export default function TriageCaseModal({
   if (!visible) return null;
 
   return (
-    <Modal visible={visible} animationType=\"slide\" transparent>
+    <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.modal}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Triage Case Details</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <X size={24} color=\"#1C1C1E\" />
+              <X size={24} color="#1C1C1E" />
             </TouchableOpacity>
           </View>
 
           {loading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size=\"large\" color={Colors.light.primary} />
+              <ActivityIndicator size="large" color={Colors.light.primary} />
             </View>
           ) : (
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -146,20 +146,20 @@ export default function TriageCaseModal({
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Patient Information</Text>
                 <View style={styles.infoRow}>
-                  <User size={16} color=\"#6B7280\" />
+                  <User size={16} color="#6B7280" />
                   <Text style={styles.infoText}>
                     Patient ID: {caseData?.patient_id?.slice(0, 12)}...
                   </Text>
                 </View>
                 <View style={styles.infoRow}>
-                  <Clock size={16} color=\"#6B7280\" />
+                  <Clock size={16} color="#6B7280" />
                   <Text style={styles.infoText}>
                     Submitted: {new Date(caseData?.created_at).toLocaleString()}
                   </Text>
                 </View>
                 {caseData?.patient_location && (
                   <View style={styles.infoRow}>
-                    <MapPin size={16} color=\"#6B7280\" />
+                    <MapPin size={16} color="#6B7280" />
                     <Text style={styles.infoText}>
                       Location: {caseData.patient_location.city},{' '}
                       {caseData.patient_location.state}
@@ -196,7 +196,7 @@ export default function TriageCaseModal({
                 <Button
                   title=\"Find Specialist\"
                   onPress={onAssignSpecialist}
-                  variant=\"primary\"
+                  variant="primary"
                 />
 
                 <Text style={styles.orText}>OR</Text>
@@ -212,7 +212,7 @@ export default function TriageCaseModal({
                   title={submitting ? 'Submitting...' : 'Submit Advice'}
                   onPress={handleGiveAdvice}
                   disabled={!advice.trim() || submitting}
-                  variant=\"secondary\"
+                  variant="secondary"
                 />
               </View>
             </ScrollView>
