@@ -21,8 +21,8 @@ import {
   X,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { NotificationBell } from '../../components/NotificationBell';
-import { NotificationsModal } from '../../components/NotificationsModal';
+import { NotificationBell } from '../../../components/NotificationBell';
+import { NotificationsModal } from '../../../components/NotificationsModal';
 
 export default function HomeScreen() {
   const router = useRouter();
