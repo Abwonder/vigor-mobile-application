@@ -30,7 +30,9 @@ export default function TriageQueueDashboard() {
   const router = useRouter();
   const [cases, setCases] = useState<TriageCase[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'reviewing'>('pending');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'reviewing'>(
+    'pending',
+  );
 
   useEffect(() => {
     fetchTriageCases();
@@ -81,32 +83,53 @@ export default function TriageQueueDashboard() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle=\"dark-content\" />
-      <DashboardHeader userName=\"PHP Dashboard\" />
+      <StatusBar barStyle="dark-content" />
+      <DashboardHeader userName="PHP Dashboard" />
 
       {/* Filter Tabs */}
       <View style={styles.filterContainer}>
         <TouchableOpacity
-          style={[styles.filterTab, filter === 'pending' && styles.filterTabActive]}
+          style={[
+            styles.filterTab,
+            filter === 'pending' && styles.filterTabActive,
+          ]}
           onPress={() => setFilter('pending')}
         >
-          <Text style={[styles.filterText, filter === 'pending' && styles.filterTextActive]}>
-            Pending ({cases.filter(c => c.status === 'pending_php').length})
+          <Text
+            style={[
+              styles.filterText,
+              filter === 'pending' && styles.filterTextActive,
+            ]}
+          >
+            Pending ({cases.filter((c) => c.status === 'pending_php').length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.filterTab, filter === 'reviewing' && styles.filterTabActive]}
+          style={[
+            styles.filterTab,
+            filter === 'reviewing' && styles.filterTabActive,
+          ]}
           onPress={() => setFilter('reviewing')}
         >
-          <Text style={[styles.filterText, filter === 'reviewing' && styles.filterTextActive]}>
-            Reviewing ({cases.filter(c => c.status === 'reviewing').length})
+          <Text
+            style={[
+              styles.filterText,
+              filter === 'reviewing' && styles.filterTextActive,
+            ]}
+          >
+            Reviewing ({cases.filter((c) => c.status === 'reviewing').length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.filterTab, filter === 'all' && styles.filterTabActive]}
           onPress={() => setFilter('all')}
         >
-          <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
+          <Text
+            style={[
+              styles.filterText,
+              filter === 'all' && styles.filterTextActive,
+            ]}
+          >
             All Cases
           </Text>
         </TouchableOpacity>
@@ -121,7 +144,7 @@ export default function TriageQueueDashboard() {
       >
         {cases.length === 0 ? (
           <View style={styles.emptyState}>
-            <AlertCircle size={48} color=\"#C7C7CC\" />
+            <AlertCircle size={48} color="#C7C7CC" />
             <Text style={styles.emptyText}>No triage cases at the moment</Text>
             <Text style={styles.emptySubtext}>
               New patient symptom submissions will appear here
@@ -141,13 +164,20 @@ export default function TriageQueueDashboard() {
               <View
                 style={[
                   styles.severityBadge,
-                  { backgroundColor: getSeverityColor(caseItem.severity_level) + '20' },
+                  {
+                    backgroundColor:
+                      getSeverityColor(caseItem.severity_level) + '20',
+                  },
                 ]}
               >
                 <View
                   style={[
                     styles.severityDot,
-                    { backgroundColor: getSeverityColor(caseItem.severity_level) },
+                    {
+                      backgroundColor: getSeverityColor(
+                        caseItem.severity_level,
+                      ),
+                    },
                   ]}
                 />
                 <Text
@@ -162,27 +192,31 @@ export default function TriageQueueDashboard() {
 
               {/* Patient Info */}
               <View style={styles.caseHeader}>
-                <User size={16} color=\"#6B7280\" />
-                <Text style={styles.patientId}>Patient #{caseItem.patient_id.slice(0, 8)}</Text>
+                <User size={16} color="#6B7280" />
+                <Text style={styles.patientId}>
+                  Patient #{caseItem.patient_id.slice(0, 8)}
+                </Text>
               </View>
 
               {/* Symptoms */}
               <Text style={styles.symptomsTitle}>Symptoms:</Text>
               <Text style={styles.symptomsText} numberOfLines={2}>
-                {caseItem.symptoms?.map((s: any) => s.name || s.type).join(', ') || 'No symptoms listed'}
+                {caseItem.symptoms
+                  ?.map((s: any) => s.name || s.type)
+                  .join(', ') || 'No symptoms listed'}
               </Text>
 
               {/* Footer */}
               <View style={styles.caseFooter}>
                 <View style={styles.footerItem}>
-                  <Clock size={14} color=\"#8E8E93\" />
+                  <Clock size={14} color="#8E8E93" />
                   <Text style={styles.footerText}>
                     {new Date(caseItem.created_at).toLocaleDateString()}
                   </Text>
                 </View>
                 {caseItem.patient_location && (
                   <View style={styles.footerItem}>
-                    <MapPin size={14} color=\"#8E8E93\" />
+                    <MapPin size={14} color="#8E8E93" />
                     <Text style={styles.footerText}>
                       {caseItem.patient_location.city || 'Unknown'}
                     </Text>
