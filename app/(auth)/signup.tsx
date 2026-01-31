@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Modal,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
@@ -53,6 +54,55 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Clean inputs
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanPhone = phone.trim();
+
+  // Update tracking
+  const updateRegistrationTracking = async (
+    field: 'email' | 'phone',
+    value: string,
+    status: string,
+    step: string,
+    userId?: string,
+  ) => {
+    try {
+      await supabase.from('registration_tracking').upsert(
+        {
+          [field]: value,
+          user_type: role || 'service_user',
+          status,
+          current_step: step,
+          user_id: userId,
+          metadata: { last_attempt: new Date().toISOString() },
+        },
+        { onConflict: field },
+      );
+    } catch (e) {
+      console.warn('Tracking update failed', e);
+    }
+  };
+
+  const checkExistingUser = async () => {
+    if (signupMode === 'email') {
+      try {
+        const { data: tracking } = await supabase
+          .from('registration_tracking')
+          .select('*')
+          .eq('email', cleanEmail)
+          .single();
+
+        if (tracking) {
+          if (tracking.status === 'verified') {
+            return { exists: true, verified: true };
+          }
+          return { exists: true, verified: false };
+        }
+      } catch (e) {}
+    }
+    return { exists: false, verified: false };
+  };
 
   const handleGoogleSignIn = async () => {
     try {
@@ -112,10 +162,20 @@ export default function SignUpScreen() {
             const refresh_token = params.get('refresh_token');
 
             if (access_token && refresh_token) {
-              await supabase.auth.setSession({
+              const { data: session } = await supabase.auth.setSession({
                 access_token,
                 refresh_token,
               });
+
+              if (session.user) {
+                await updateRegistrationTracking(
+                  'email',
+                  session.user.email || '',
+                  'verified',
+                  'completed',
+                  session.user.id,
+                );
+              }
 
               router.replace('/select-role');
             }
@@ -142,7 +202,7 @@ export default function SignUpScreen() {
   const handlePhoneSignUp = async () => {
     setErrors({});
 
-    if (!phone || phone.length < 10) {
+    if (!cleanPhone || cleanPhone.length < 10) {
       setErrors({ phone: 'Please enter a valid phone number' });
       return;
     }
@@ -161,7 +221,17 @@ export default function SignUpScreen() {
     setLoading(true);
 
     try {
-      const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
+      const formattedPhone = cleanPhone.startsWith('+')
+        ? cleanPhone
+        : `+${cleanPhone}`;
+
+      // Track attempt
+      await updateRegistrationTracking(
+        'phone',
+        formattedPhone,
+        'pending',
+        'signup',
+      );
 
       // Create account with phone-based email using Gmail + addressing
       const sanitizedPhone = formattedPhone.replace(/[^0-9]/g, '');
@@ -181,38 +251,39 @@ export default function SignUpScreen() {
       });
 
       if (error) {
-        setErrors({ general: error.message });
+        // Check if duplicate
+        if (error.message.includes('already registered')) {
+          setErrors({
+            general: 'This phone number is already registered. Please log in.',
+          });
+        } else {
+          setErrors({ general: error.message });
+        }
         return;
       }
 
       if (data.user) {
-        // Send OTP to phone
-        const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-        const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+        await updateRegistrationTracking(
+          'phone',
+          formattedPhone,
+          'pending',
+          'verification',
+          data.user.id,
+        );
 
-        const response = await fetch(
-          `${supabaseUrl}/functions/v1/send-phone-code`,
+        // Send OTP to phone
+        const { error: otpError } = await supabase.functions.invoke(
+          'send-phone-code',
           {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${supabaseAnonKey}`,
-            },
-            body: JSON.stringify({
-              phoneNumber: formattedPhone,
-              userId: data.user.id,
-            }),
+            body: { phoneNumber: formattedPhone, userId: data.user.id },
           },
         );
 
-        if (!response.ok) {
-          setErrors({
-            general: 'Account created but failed to send verification code',
-          });
-          return;
+        if (otpError) {
+          console.error('OTP Error', otpError);
         }
 
-        // Navigate to phone verification with signup context
+        // Navigate to phone verification
         router.push({
           pathname: '/verify-phone',
           params: {
@@ -240,7 +311,7 @@ export default function SignUpScreen() {
 
     setErrors({});
 
-    if (!email) {
+    if (!cleanEmail) {
       setErrors({ email: 'Email is required' });
       return;
     }
@@ -259,28 +330,90 @@ export default function SignUpScreen() {
     setLoading(true);
 
     try {
+      // Track attempt
+      await updateRegistrationTracking(
+        'email',
+        cleanEmail,
+        'pending',
+        'signup',
+      );
+
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
+        email: cleanEmail,
         password: password,
         options: {
           emailRedirectTo: undefined,
           data: {
-            email: email.trim(),
             role: role || 'service_user',
           },
         },
       });
 
       if (error) {
-        setErrors({ general: error.message });
+        // Smart handling for existing users
+        if (
+          error.message &&
+          (error.message.includes('already registered') ||
+            error.message.includes('User already registered'))
+        ) {
+          // Check tracking status
+          const { verified } = await checkExistingUser();
+
+          if (verified) {
+            Alert.alert(
+              'Account Exists',
+              'This email is already registered and verified. Please log in.',
+              [
+                { text: 'Log In', onPress: () => router.push('/login') },
+                { text: 'Cancel', style: 'cancel' },
+              ],
+            );
+          } else {
+            Alert.alert(
+              'Account Exists',
+              'This email is registered but not verified. We will send a new code.',
+              [
+                {
+                  text: 'Verify Now',
+                  onPress: async () => {
+                    // Resend OTP
+                    const { error: resendError } = await supabase.auth.resend({
+                      type: 'signup',
+                      email: cleanEmail,
+                    });
+
+                    if (!resendError) {
+                      router.push({
+                        pathname: '/verify-email',
+                        params: { email: cleanEmail },
+                      });
+                    } else {
+                      setErrors({ general: resendError.message });
+                    }
+                  },
+                },
+                { text: 'Cancel', style: 'cancel' },
+              ],
+            );
+          }
+        } else {
+          setErrors({ general: error.message });
+        }
         return;
       }
 
-      // With email confirmation enabled, user needs to verify email via OTP
       if (data.user) {
+        await updateRegistrationTracking(
+          'email',
+          cleanEmail,
+          'pending',
+          'verification',
+          data.user.id,
+        );
+
         router.push({
           pathname: '/verify-email',
-          params: { email: email.trim() },
+          params: { email: cleanEmail },
         });
       }
     } catch (error: any) {
@@ -650,13 +783,12 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#DC2626',
     fontSize: 13,
-    marginBottom: 8,
   },
   mismatchText: {
     color: '#DC2626',
     fontSize: 13,
+    marginBottom: 16,
     marginTop: -8,
-    marginBottom: 8,
   },
   validationContainer: {
     marginBottom: 24,
@@ -670,9 +802,10 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 4,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#D1D5DB',
     marginRight: 8,
+    backgroundColor: '#FFFFFF',
   },
   checkboxChecked: {
     backgroundColor: '#10B981',
@@ -680,26 +813,29 @@ const styles = StyleSheet.create({
   },
   validationText: {
     fontSize: 13,
-    color: '#6B7280',
-  },
-  validationTextValid: {
-    color: '#10B981',
+    color: '#4B5563',
   },
   createButton: {
-    backgroundColor: '#E5E7EB',
-    borderRadius: 12,
+    backgroundColor: '#0EA5E9',
+    borderRadius: 50,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 16,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    opacity: 0.6,
   },
   createButtonActive: {
-    backgroundColor: '#00BCD4',
+    opacity: 1,
   },
   createButtonDisabled: {
     opacity: 0.6,
   },
   createButtonText: {
-    color: '#9CA3AF',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

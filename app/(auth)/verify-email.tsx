@@ -93,6 +93,21 @@ export default function VerifyEmailScreen() {
       }
 
       if (data.session) {
+        // Update registration tracking
+        try {
+          await supabase.from('registration_tracking').upsert(
+            {
+              email: email,
+              status: 'verified',
+              current_step: 'completed',
+              user_id: data.session.user.id,
+            },
+            { onConflict: 'email' },
+          );
+        } catch (e) {
+          console.warn(e);
+        }
+
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('role')
@@ -101,7 +116,7 @@ export default function VerifyEmailScreen() {
 
         if (
           profile?.role === 'specialist' ||
-          profile.role === 'public_health'
+          profile?.role === 'public_health'
         ) {
           router.replace('/specialist/onboarding/specialist/personal-info');
         } else if (profile?.role === 'sponsor') {
@@ -145,6 +160,7 @@ export default function VerifyEmailScreen() {
 
       if (error) {
         setError('Failed to resend code. Please try again.');
+        console.error('Resend error', error);
       }
     } catch (err) {
       console.error('Resend error:', err);

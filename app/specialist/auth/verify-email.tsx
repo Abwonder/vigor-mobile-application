@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Mail } from 'lucide-react-native';
 import { Colors } from '../../../constants/Colors';
 import { Button } from '../../../components/specialist/Button';
 import { CodeInput } from '../../../components/specialist/CodeInput';
+import { supabase } from '../../../lib/supabase';
 
-const VALID_CODE = '448459'; // Demo code
 const TIMER_DURATION = 45; // seconds
 
 export default function VerifyEmailScreen() {
   const router = useRouter();
+  const { email } = useLocalSearchParams<{ email: string }>();
   const [code, setCode] = useState<string[]>(Array(6).fill(''));
   const [timer, setTimer] = useState(TIMER_DURATION);
   const [canResend, setCanResend] = useState(false);
-
-  // Email from previous screen (in real app, would come from route params or state)
-  const email = 'Ameliahart@email.com';
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (timer > 0) {
@@ -35,23 +34,65 @@ export default function VerifyEmailScreen() {
     }
   }, [timer]);
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const enteredCode = code.join('');
-    if (enteredCode === VALID_CODE) {
-      console.log('Code verified!');
-      router.push('/specialist/auth/email-verified');
-    } else {
-      console.log('Invalid code');
-      // TODO: Show error
+    if (enteredCode.length !== 6) return;
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email || '',
+        token: enteredCode,
+        type: 'email',
+      });
+
+      if (error) {
+        Alert.alert('Verification Failed', 'Invalid code. Please try again.');
+        setCode(Array(6).fill(''));
+        return;
+      }
+
+      if (data.session) {
+        // Update tracking
+        await supabase.from('registration_tracking').upsert(
+          {
+            email: email,
+            status: 'verified',
+            current_step: 'completed',
+            user_id: data.session.user.id,
+          },
+          { onConflict: 'email' },
+        );
+
+        router.push('/specialist/auth/email-verified');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleResend = () => {
-    if (canResend) {
-      console.log('Resending code...');
-      setTimer(TIMER_DURATION);
-      setCanResend(false);
+  const handleResend = async () => {
+    if (canResend && email) {
       setCode(Array(6).fill(''));
+      setCanResend(false);
+      setTimer(TIMER_DURATION);
+
+      try {
+        const { error } = await supabase.auth.resend({
+          type: 'signup',
+          email: email,
+        });
+
+        if (error) {
+          Alert.alert('Error', 'Failed to resend code');
+        } else {
+          Alert.alert('Sent', 'Verification code resent successfully');
+        }
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 
@@ -116,9 +157,9 @@ export default function VerifyEmailScreen() {
         <CodeInput code={code} onCodeChange={setCode} />
 
         <Button
-          title="Verify code"
+          title={loading ? 'Verifying...' : 'Verify code'}
           onPress={handleVerify}
-          disabled={!isCodeComplete}
+          disabled={!isCodeComplete || loading}
           variant="primary"
         />
 

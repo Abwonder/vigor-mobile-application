@@ -7,6 +7,7 @@ import {
   Platform,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +17,7 @@ import { Button } from '../../../components/specialist/Button';
 import { Input } from '../../../components/specialist/Input';
 import { GoogleButton } from '../../../components/specialist/GoogleButton';
 import { PasswordRequirements } from '../../../components/specialist/PasswordRequirements';
+import { supabase } from '../../../lib/supabase';
 
 export default function CreateAccountScreen() {
   const router = useRouter();
@@ -24,6 +26,7 @@ export default function CreateAccountScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Password validation
   const isPasswordValid =
@@ -37,14 +40,83 @@ export default function CreateAccountScreen() {
 
   const handleGoogleSignIn = () => {
     console.log('Google Sign In');
-    // TODO: Implement Google OAuth
+    // TODO: Implement Google OAuth for specialist if needed, similar to patient
+    Alert.alert(
+      'Coming Soon',
+      'Google Sign-In for specialists is coming soon.',
+    );
   };
 
-  const handleCreateAccount = () => {
+  const updateRegistrationTracking = async (email: string, userId?: string) => {
+    try {
+      await supabase.from('registration_tracking').upsert(
+        {
+          email: email,
+          user_type: 'specialist',
+          status: 'pending',
+          current_step: 'signup',
+          user_id: userId,
+          metadata: { last_attempt: new Date().toISOString() },
+        },
+        { onConflict: 'email' },
+      );
+    } catch (e) {
+      console.warn('Tracking update failed', e);
+    }
+  };
+
+  const handleCreateAccount = async () => {
     if (isFormValid) {
-      console.log('Creating account with:', email);
-      // TODO: Implement account creation
-      router.push('/specialist/auth/verify-email');
+      setLoading(true);
+      try {
+        const cleanEmail = email.trim().toLowerCase();
+
+        // Track attempt
+        await updateRegistrationTracking(cleanEmail);
+
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: password,
+          options: {
+            data: {
+              role: 'specialist',
+            },
+          },
+        });
+
+        if (error) {
+          if (error.message.includes('already registered')) {
+            Alert.alert(
+              'Account Exists',
+              'This email is already registered. Please log in.',
+            );
+          } else {
+            Alert.alert('Error', error.message);
+          }
+          return;
+        }
+
+        if (data.user) {
+          // Update tracking with user ID
+          await supabase.from('registration_tracking').upsert(
+            {
+              email: cleanEmail,
+              user_id: data.user.id,
+              current_step: 'verification',
+            },
+            { onConflict: 'email' },
+          );
+
+          router.push({
+            pathname: '/specialist/auth/verify-email',
+            params: { email: cleanEmail },
+          });
+        }
+      } catch (error: any) {
+        Alert.alert('Error', error.message || 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -92,9 +164,9 @@ export default function CreateAccountScreen() {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Phone or Email</Text>
+              <Text style={styles.label}>Email</Text>
               <Input
-                placeholder="Enter your preferred info"
+                placeholder="Enter your email"
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -157,15 +229,15 @@ export default function CreateAccountScreen() {
 
         <View style={styles.footer}>
           <Button
-            title="Create Account"
+            title={loading ? 'Creating Account...' : 'Create Account'}
             onPress={handleCreateAccount}
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
             variant="primary"
           />
 
           <TouchableOpacity
             style={styles.loginLink}
-            onPress={() => console.log('Navigate to Login')}
+            onPress={() => router.push('/specialist/auth/login')}
           >
             <Text style={styles.loginText}>
               Already have an account?{' '}
